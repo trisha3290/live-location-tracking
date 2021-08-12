@@ -1,0 +1,118 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:final_done/setup/test.dart';
+import 'package:flutter/material.dart';
+
+import 'groupmap.dart';
+class Groups extends StatefulWidget {
+  final String name;
+  const Groups({Key? key, required this.name}) : super(key: key);
+
+  @override
+  _GroupsState createState() => _GroupsState();
+
+}
+
+class _GroupsState extends State<Groups> {
+
+  @override
+  Widget build(BuildContext context) {
+    Stream<QuerySnapshot> cs = FirebaseFirestore.instance
+        .collection('groups')
+        .where('data', arrayContains: widget.name)
+        .snapshots();
+   print("${widget.name} received");
+    return Scaffold(
+      //backgroundColor: Colors.grey[900],
+      appBar: AppBar(
+
+        title: Text('Choose a group'),
+
+
+
+        elevation: 0.0,
+
+      ),
+
+
+      body: StreamBuilder<QuerySnapshot>(
+          stream: cs,
+          builder: (BuildContext context,
+              AsyncSnapshot<QuerySnapshot> snapshot) {
+            if (!snapshot.hasData) {
+              return Center(
+
+                child: const Text("look around! you are alone"),
+              );
+            }
+
+
+
+            var _todoList = snapshot.data!.docs;
+            if (snapshot.connectionState == ConnectionState.active) {
+              return ListView.builder(
+                  itemCount: _todoList.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 1.0, horizontal: 4.0),
+                      child: Card(
+                        child: ListTile(
+                          onTap: () {},
+                          title: Text(_todoList[index]['groupname'].toString(),
+                              style: TextStyle(
+                                color: Colors.pink,
+                                letterSpacing: 2,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+
+                              )),
+                          subtitle: Text(
+                              _todoList[index]['data'].join(','),
+                              style: TextStyle(
+                                color: Colors.pink,
+                                fontSize: 14,
+                                letterSpacing: 2,
+                              )
+                          ),
+
+                        ),
+                      ),
+                    );
+                  });
+            } else {
+              return Container();
+            }
+
+
+          }
+
+      ),
+
+
+
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () =>
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (BuildContext context) =>
+                      MainPage(
+                        name: widget.name,
+                      )),
+            ),
+      ),
+       // ElevatedButton(onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context) => MyLocation(username: '', userid: '', users: [], grpid: '', userlat: 76 , userlong:87 )));},
+         //   child: Text('view location'))
+
+
+
+
+    );
+  }
+
+
+
+  @override
+  bool get wantKeepAlive => true;
+}
