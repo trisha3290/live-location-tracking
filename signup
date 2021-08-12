@@ -1,0 +1,80 @@
+import 'package:final_done/setup/signin.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class SignUp extends StatefulWidget {
+ // const SignUp({Key key}) : super(key: key);
+
+  @override
+  _SignUpState createState() => _SignUpState();
+}
+
+class _SignUpState extends State<SignUp> {
+  late String _email, _password;
+  late final String _username;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: Text('sign up'),
+        ),
+        body: Form(
+          key: _formKey,
+          child: Column(
+            children: <Widget>[
+              TextFormField(
+                validator: (input) {
+                  if (input!.isEmpty) {
+                    return 'please type an email';
+                  }
+                },
+                onSaved: (input) => _email = input!,
+                decoration: InputDecoration(
+                    labelText: 'Email'
+                ),
+              ),
+              TextFormField(
+                validator: (input) {
+                  if (input!.length < 6) {
+                    return 'YOUR PASSWORD NEEDS TO BE OF ATLEAST 6 CHARS';
+                  }
+                },
+                onSaved: (input) => _password = input!,
+                decoration: InputDecoration(
+                    labelText: 'password'
+                ),
+                obscureText: true,
+              ),
+              ElevatedButton(onPressed: signUp,
+                  child: Text('sign up'))
+
+            ],
+          ),
+        )
+    );
+  }
+
+  Future<void> signUp() async {
+    final formState = _formKey.currentState;
+    if (formState!.validate()) {
+      //TODO login to firebase
+      formState.save();
+      try {
+        UserCredential user = (await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(email: _email, password: _password
+        ));
+        User? updateUser = FirebaseAuth.instance.currentUser;
+        updateUser!.updateEmail(_email);
+
+        Navigator.of(context).pop();
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => LoginPage()));
+      } catch (e) {
+        print(e);
+      }
+    }
+  }
+}
